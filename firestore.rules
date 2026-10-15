@@ -1,0 +1,19 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Each signed-in grown-up can only read and write their own saved characters.
+    match /users/{uid}/characters/{charId} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.drawing is string
+        && request.resource.data.drawing.size() < 1000000;
+    }
+    // Saved characters ("My characters").
+    match /users/{uid}/library/{charId} {
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.png is string
+        && request.resource.data.png.size() < 900000;
+    }
+  }
+}
